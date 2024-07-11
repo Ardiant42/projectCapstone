@@ -77,9 +77,10 @@ def main():
     # Correlation matrix
     st.subheader("Correlation Matrix")
     correlation_matrix = df.corr()
-    plt.figure(figsize=(12, 10))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
-    st.pyplot()
+    fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure and axis object
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5, ax=ax)
+    ax.set_title('Correlation Matrix')  # Set title for the plot
+    st.pyplot(fig)  # Display the plot
     
     # Class distribution before and after oversampling
     st.subheader("Class Distribution")
@@ -121,6 +122,6 @@ def main():
     plt.xlabel("Model")
     plt.ylabel("Accuracy")
     st.pyplot()
-    
+
 if __name__ == '__main__':
     main()
