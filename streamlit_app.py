@@ -2,13 +2,13 @@ import streamlit as st
 import itertools
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, plot_tree
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 
 # Fungsi untuk memuat data
 def load_data():
@@ -29,7 +29,7 @@ def load_data():
     for column in df.columns:
         if df[column].dtype == 'object':
             df[column].fillna(df[column].mode()[0], inplace=True)
-    df = df.apply(pd.to_numeric, errors='ignore')
+    df['num'] = df['num'].astype(int)  # Mengonversi 'num' ke tipe data integer
     return df
 
 # Fungsi untuk melatih model
@@ -72,18 +72,31 @@ def main():
     
     st.write("### Input Attributes")
     age = st.number_input("Usia (age)", min_value=0, max_value=120, value=25)
-    sex = st.selectbox("Jenis Kelamin (sex) (1-laki-laki 0-perempuan)", options=[0, 1])
-    cp = st.selectbox("Tipe nyeri dada (cp)", options=[0, 1, 2, 3])
+    sex = st.selectbox("Jenis Kelamin (sex) (1-laki-laki 0-perempuan)", options=['female', 'male'])
+    cp = st.selectbox("Tipe nyeri dada (cp)", options=['typical angina', 'atypical angina', 'non-anginal pain', 'asymptomatic'])
     trestbps = st.number_input("Tekanan darah saat ini (trestbps)", min_value=0, max_value=300, value=120)
     chol = st.number_input("Kolesterol (chol)", min_value=0, max_value=600, value=200)
-    fbs = st.selectbox("Kadar Gula Darah > 120 mg/dl (fbs)", options=[0, 1])
-    restecg = st.selectbox("Hasil Elektrokardiografi saat istirahat (restecg)", options=[0, 1, 2])
+    fbs = st.selectbox("Kadar Gula Darah > 120 mg/dl (fbs)", options=['false', 'true'])
+    restecg = st.selectbox("Hasil Elektrokardiografi saat istirahat (restecg)", options=['normal', 'having ST-T wave abnormality', 'showing probable or definite left ventricular hypertrophy'])
     thalach = st.number_input("Detak jantung maksimum (thalach)", min_value=0, max_value=250, value=150)
-    exang = st.selectbox("Induksi Angina oleh olahraga (exang)", options=[0, 1])
+    exang = st.selectbox("Induksi Angina oleh olahraga (exang)", options=['no', 'yes'])
     oldpeak = st.number_input("Induksi Depresi ST oleh olahraga (oldpeak)", min_value=0.0, max_value=10.0, value=1.0, step=0.1)
-    slope = st.selectbox("Kemiringan ST Puncak saat olahraga (slope)", options=[0, 1, 2])
+    slope = st.selectbox("Kemiringan ST Puncak saat olahraga (slope)", options=['upsloping', 'flat', 'downsloping'])
     ca = st.number_input("Pembuluh darah yang diwarnai Fluoroskopi (ca)", min_value=0, max_value=4, value=0)
-    thal = st.selectbox("Kondisi Talasemia (thal)", options=[1, 2, 3])
+    thal = st.selectbox("Kondisi Talasemia (thal)", options=['normal', 'fixed defect', 'reversible defect'])
+    
+    # Mengonversi input_data ke format numerik yang sesuai
+    sex = 1 if sex == 'male' else 0
+    cp_map = {'typical angina': 0, 'atypical angina': 1, 'non-anginal pain': 2, 'asymptomatic': 3}
+    cp = cp_map[cp]
+    fbs = 1 if fbs == 'true' else 0
+    restecg_map = {'normal': 0, 'having ST-T wave abnormality': 1, 'showing probable or definite left ventricular hypertrophy': 2}
+    restecg = restecg_map[restecg]
+    exang = 1 if exang == 'yes' else 0
+    slope_map = {'upsloping': 0, 'flat': 1, 'downsloping': 2}
+    slope = slope_map[slope]
+    thal_map = {'normal': 1, 'fixed defect': 2, 'reversible defect': 3}
+    thal = thal_map[thal]
     
     input_data = [age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]
     
@@ -98,6 +111,12 @@ def main():
     if st.button("Predict with Decision Tree"):
         result_dt = make_prediction(dt, scaler, input_data)
         st.write(f"Decision Tree Prediction: {'Heart Disease' if result_dt[0] > 0 else 'No Heart Disease'}")
-
+        
+        # Menampilkan plot dari Decision Tree
+        st.write("### Decision Tree Structure")
+        st.set_option('deprecation.showPyplotGlobalUse', False)  # Disable deprecated warning
+        plot_tree(dt, filled=True)
+        st.pyplot()
+    
 if __name__ == '__main__':
     main()
