@@ -129,9 +129,9 @@ def main():
     # Confusion matrix for K-Nearest Neighbors (KNN)
     cm_knn = confusion_matrix(y_test, Y_pred_knn)
     disp_knn = ConfusionMatrixDisplay(confusion_matrix=cm_knn)
-    st.write("Confusion Matrix:")
-    disp_knn.plot(cmap=plt.cm.Blues, ax=plt.subplots(figsize=(7, 5))[1])
-    st.pyplot()
+    fig, ax = plt.subplots(figsize=(7, 5))
+    disp_knn.plot(cmap=plt.cm.Blues, ax=ax)
+    st.pyplot(fig)
 
     # Detailed analysis for Decision Tree
     st.markdown("### Decision Tree")
@@ -145,9 +145,9 @@ def main():
     # Confusion matrix for Decision Tree
     cm_dt = confusion_matrix(y_test, Y_pred_dt)
     disp_dt = ConfusionMatrixDisplay(confusion_matrix=cm_dt)
-    st.write("Confusion Matrix:")
-    disp_dt.plot(cmap=plt.cm.Blues, ax=plt.subplots(figsize=(7, 5))[1])
-    st.pyplot()
+    fig, ax = plt.subplots(figsize=(7, 5))
+    disp_dt.plot(cmap=plt.cm.Blues, ax=ax)
+    st.pyplot(fig)
 
 if __name__ == '__main__':
     main()
