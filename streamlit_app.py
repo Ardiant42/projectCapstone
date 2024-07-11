@@ -7,18 +7,16 @@ from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
-from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
 
 # Fungsi untuk memuat data
 def load_data():
     with open('hungarian.data', encoding='Latin1') as file:
         lines = [line.strip() for line in file]
-    data = itertools.takewhile(
-        lambda x: len(x) == 76,
-        (' '.join(lines[i:(i + 10)]).split() for i in range(0, len(lines), 10))
-    )
-    df = pd.DataFrame.from_records(data)
+    data = []
+    for i in range(0, len(lines), 10):
+        data.append(' '.join(lines[i:i + 10]).split())
+    df = pd.DataFrame(data)
     df.replace('-9', np.nan, inplace=True)
     df.drop(columns=df.columns[-1], inplace=True)
     selected_columns = [2, 3, 8, 9, 11, 15, 18, 31, 37, 39, 40, 43, 50, 57]
@@ -52,18 +50,7 @@ def train_models(df):
     xgb_model.fit(X_train, y_train)
     
     # Melatih model Decision Tree
-    max_accuracy = 0
-    best_x = 0
-    for x in range(500):
-        dt = DecisionTreeClassifier(random_state=x)
-        dt.fit(X_train, y_train)
-        Y_pred_dt = dt.predict(X_test)
-        current_accuracy = round(accuracy_score(Y_pred_dt, y_test) * 100, 2)
-        if current_accuracy > max_accuracy:
-            max_accuracy = current_accuracy
-            best_x = x
-    
-    dt = DecisionTreeClassifier(random_state=best_x)
+    dt = DecisionTreeClassifier(random_state=42)
     dt.fit(X_train, y_train)
     
     return scaler, knn, xgb_model, dt, X_test, y_test
@@ -110,19 +97,6 @@ def main():
     if st.button("Predict with Decision Tree"):
         result_dt = make_prediction(dt, scaler, input_data)
         st.write(f"Decision Tree Prediction: {'Heart Disease' if result_dt[0] > 0 else 'No Heart Disease'}")
-        
-        # Menampilkan akurasi Decision Tree
-        Y_pred_dt = dt.predict(X_test)
-        score_dt = round(accuracy_score(Y_pred_dt, y_test) * 100, 2)
-        st.write(f"Accuracy: {score_dt}%")
-        
-        # Menampilkan confusion matrix Decision Tree
-        cm = confusion_matrix(y_test, Y_pred_dt)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-        fig, ax = plt.subplots()
-        disp.plot(ax=ax, cmap=plt.cm.Blues)
-        ax.set_title('Confusion Matrix - Decision Tree')
-        st.pyplot(fig)
 
 if __name__ == '__main__':
     main()
