@@ -116,12 +116,12 @@ def main():
     
     # Plot accuracy scores
     st.subheader("Accuracy Scores")
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='Model', y='Accuracy', data=results_df)
-    plt.xticks(rotation=45)
-    plt.xlabel("Model")
-    plt.ylabel("Accuracy")
-    st.pyplot()
+    fig, ax = plt.subplots(figsize=(10, 6))  # Create a new figure for the bar plot
+    sns.barplot(x='Model', y='Accuracy', data=results_df, ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)  # Rotate x-axis labels for better readability
+    ax.set_xlabel("Model")
+    ax.set_ylabel("Accuracy")
+    st.pyplot(fig)  # Display the plot
 
 if __name__ == '__main__':
     main()
