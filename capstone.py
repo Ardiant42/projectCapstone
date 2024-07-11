@@ -16,7 +16,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from xgboost import XGBClassifier
 
-# Fungsi untuk memuat data
+# Function to load data
 def load_data():
     dir = 'hungarian.data'
     with open(dir, encoding='Latin1') as file:
@@ -40,7 +40,7 @@ def load_data():
     df = df.apply(pd.to_numeric, errors='ignore')
     return df
 
-# Fungsi untuk membangun dan mengevaluasi model
+# Function to build and evaluate models
 def build_and_evaluate_models(X_train, y_train, X_test, y_test):
     models = {
         "Logistic Regression": LogisticRegression(),
@@ -48,6 +48,7 @@ def build_and_evaluate_models(X_train, y_train, X_test, y_test):
         "Support Vector Machine": SVC(kernel='linear'),
         "K-Nearest Neighbors": KNeighborsClassifier(n_neighbors=3),
         "Decision Tree": DecisionTreeClassifier(random_state=42),
+        "Random Forest": RandomForestClassifier(random_state=42),
         "XGBoost": XGBClassifier(objective="binary:logistic", random_state=42)
     }
     
@@ -59,74 +60,67 @@ def build_and_evaluate_models(X_train, y_train, X_test, y_test):
         results.append((model_name, accuracy))
     return results
 
-# Fungsi utama Streamlit
+# Main function for Streamlit app
 def main():
     st.title("Heart Disease Classification")
-    st.markdown("""
-        This web app performs classification of heart disease based on the Hungarian dataset.
-        The dataset contains various attributes related to heart health.
-        Explore different models and their accuracy scores to understand which model performs best for this dataset.
-    """)
+    st.markdown("### Project Capstone Heart Disease")
+    st.markdown("Dataset: Hungarian Dataset")
+    st.markdown("[Source: UCI Heart Disease Data](http://archive.ics.uci.edu/dataset/45/heart+disease)")
     
-    # Memuat data
+    # Load data
     df = load_data()
     
-    st.subheader("DataFrame")
+    # Display data table
+    st.subheader("Data Overview")
     st.write(df.head())
     
+    # Correlation matrix
     st.subheader("Correlation Matrix")
     correlation_matrix = df.corr()
     plt.figure(figsize=(12, 10))
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
-    plt.title('Correlation Matrix')
-    st.pyplot(plt)
+    st.pyplot()
     
-    # Memisahkan fitur (X) dan label (y)
-    X = df.drop(columns=['num'])
-    y = df['num']
+    # Class distribution before and after oversampling
+    st.subheader("Class Distribution")
+    fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+    axes[0].set_title("Before Oversampling")
+    df['num'].value_counts().sort_index().plot(kind='bar', ax=axes[0])
+    axes[0].set_xlabel("Class")
+    axes[0].set_ylabel("Frequency")
     
-    # Plot distribusi kelas sebelum oversampling
-    st.subheader("Class Distribution Before Oversampling")
-    fig, ax = plt.subplots()
-    y.value_counts().sort_index().plot(kind='bar', title='Class Distribution Before Oversampling', ax=ax)
-    plt.xlabel('Class')
-    plt.ylabel('Frequency')
-    st.pyplot(fig)
-    
-    # Menerapkan SMOTE
     smote = SMOTE(random_state=42)
-    X_res, y_res = smote.fit_resample(X, y)
+    X_res, y_res = smote.fit_resample(df.drop(columns=['num']), df['num'])
+    pd.Series(y_res).value_counts().sort_index().plot(kind='bar', ax=axes[1])
+    axes[1].set_title("After Oversampling")
+    axes[1].set_xlabel("Class")
+    axes[1].set_ylabel("Frequency")
     
-    # Plot distribusi kelas setelah oversampling
-    st.subheader("Class Distribution After Oversampling")
-    fig, ax = plt.subplots()
-    y_res.value_counts().sort_index().plot(kind='bar', title='Class Distribution After Oversampling', ax=ax)
-    plt.xlabel('Class')
-    plt.ylabel('Frequency')
     st.pyplot(fig)
     
-    # Normalisasi atau standarisasi fitur
+    # Normalization or standardization of features
     scaler = StandardScaler()
     X_res = scaler.fit_transform(X_res)
     
-    # Membagi data menjadi set pelatihan dan set pengujian
+    # Train-test split after oversampling
     X_train, X_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.2, random_state=42)
     
-    # Membangun dan mengevaluasi model
+    # Build and evaluate models
+    st.subheader("Model Evaluation")
     results = build_and_evaluate_models(X_train, y_train, X_test, y_test)
-    
-    # Menampilkan hasil evaluasi model
     results_df = pd.DataFrame(results, columns=["Model", "Accuracy"])
-    st.subheader("Model Accuracy")
+    
+    # Display accuracy scores
     st.write(results_df)
     
-    # Plot akurasi model
-    st.subheader("Accuracy Score Barplot")
-    fig, ax = plt.subplots()
-    sns.barplot(x='Model', y='Accuracy', data=results_df, ax=ax)
+    # Plot accuracy scores
+    st.subheader("Accuracy Scores")
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='Model', y='Accuracy', data=results_df)
+    plt.xticks(rotation=45)
     plt.xlabel("Model")
-    plt.ylabel("Accuracy score")
-    st.pyplot(fig)
-
+    plt.ylabel("Accuracy")
+    st.pyplot()
+    
 if __name__ == '__main__':
     main()
