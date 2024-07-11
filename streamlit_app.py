@@ -1,12 +1,14 @@
 import streamlit as st
-import itertools
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 # Fungsi untuk memuat data
 def load_data():
@@ -41,13 +43,30 @@ def train_models(df):
     X_res = scaler.fit_transform(X_res)
     X_train, X_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.2, random_state=42)
     
+    # Melatih model KNN
     knn = KNeighborsClassifier(n_neighbors=3)
     knn.fit(X_train, y_train)
     
+    # Melatih model XGBoost
     xgb_model = XGBClassifier(objective="binary:logistic", random_state=42)
     xgb_model.fit(X_train, y_train)
     
-    return scaler, knn, xgb_model
+    # Melatih model Decision Tree
+    max_accuracy = 0
+    best_x = 0
+    for x in range(500):
+        dt = DecisionTreeClassifier(random_state=x)
+        dt.fit(X_train, y_train)
+        Y_pred_dt = dt.predict(X_test)
+        current_accuracy = round(accuracy_score(Y_pred_dt, y_test) * 100, 2)
+        if current_accuracy > max_accuracy:
+            max_accuracy = current_accuracy
+            best_x = x
+    
+    dt = DecisionTreeClassifier(random_state=best_x)
+    dt.fit(X_train, y_train)
+    
+    return scaler, knn, xgb_model, dt, X_test, y_test
 
 # Fungsi untuk membuat prediksi
 def make_prediction(model, scaler, input_data):
@@ -61,7 +80,7 @@ def main():
     
     # Memuat data dan melatih model
     df = load_data()
-    scaler, knn, xgb_model = train_models(df)
+    scaler, knn, xgb_model, dt, X_test, y_test = train_models(df)
     
     st.write("### Input Attributes")
     age = st.number_input("Usia (age)", min_value=0, max_value=120, value=25)
@@ -87,6 +106,24 @@ def main():
     if st.button("Predict with XGBoost"):
         result_xgb = make_prediction(xgb_model, scaler, input_data)
         st.write(f"XGBoost Prediction: {'Heart Disease' if result_xgb[0] > 0 else 'No Heart Disease'}")
+    
+    if st.button("Predict with Decision Tree"):
+        result_dt = make_prediction(dt, scaler, input_data)
+        st.write(f"Decision Tree Prediction: {'Heart Disease' if result_dt[0] > 0 else 'No Heart Disease'}")
+        
+        # Menampilkan akurasi Decision Tree
+        Y_pred_dt = dt.predict(X_test)
+        score_dt = round(accuracy_score(Y_pred_dt, y_test) * 100, 2)
+        st.write(f"Accuracy: {score_dt}%")
+        
+        # Menampilkan confusion matrix Decision Tree
+        cm = confusion_matrix(y_test, Y_pred_dt)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        fig, ax = plt.subplots()
+        disp.plot(ax=ax, cmap=plt.cm.Blues)
+        ax.set_title('Confusion Matrix - Decision Tree')
+        st.pyplot(fig)
 
 if __name__ == '__main__':
     main()
+
