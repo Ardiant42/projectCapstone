@@ -62,14 +62,19 @@ def build_and_evaluate_models(X_train, y_train, X_test, y_test):
 # Fungsi utama Streamlit
 def main():
     st.title("Heart Disease Classification")
+    st.markdown("""
+        This web app performs classification of heart disease based on the Hungarian dataset.
+        The dataset contains various attributes related to heart health.
+        Explore different models and their accuracy scores to understand which model performs best for this dataset.
+    """)
     
     # Memuat data
     df = load_data()
     
-    st.write("### DataFrame")
+    st.subheader("DataFrame")
     st.write(df.head())
     
-    st.write("### Korelasi Matriks")
+    st.subheader("Correlation Matrix")
     correlation_matrix = df.corr()
     plt.figure(figsize=(12, 10))
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
@@ -81,11 +86,11 @@ def main():
     y = df['num']
     
     # Plot distribusi kelas sebelum oversampling
-    st.write("### Distribusi Kelas Sebelum Oversampling")
+    st.subheader("Class Distribution Before Oversampling")
     fig, ax = plt.subplots()
-    y.value_counts().sort_index().plot(kind='bar', title='Distribusi Kelas Sebelum Oversampling', ax=ax)
-    plt.xlabel('Kelas')
-    plt.ylabel('Frekuensi')
+    y.value_counts().sort_index().plot(kind='bar', title='Class Distribution Before Oversampling', ax=ax)
+    plt.xlabel('Class')
+    plt.ylabel('Frequency')
     st.pyplot(fig)
     
     # Menerapkan SMOTE
@@ -93,11 +98,11 @@ def main():
     X_res, y_res = smote.fit_resample(X, y)
     
     # Plot distribusi kelas setelah oversampling
-    st.write("### Distribusi Kelas Setelah Oversampling")
+    st.subheader("Class Distribution After Oversampling")
     fig, ax = plt.subplots()
-    y_res.value_counts().sort_index().plot(kind='bar', title='Distribusi Kelas Setelah Oversampling', ax=ax)
-    plt.xlabel('Kelas')
-    plt.ylabel('Frekuensi')
+    y_res.value_counts().sort_index().plot(kind='bar', title='Class Distribution After Oversampling', ax=ax)
+    plt.xlabel('Class')
+    plt.ylabel('Frequency')
     st.pyplot(fig)
     
     # Normalisasi atau standarisasi fitur
@@ -112,11 +117,11 @@ def main():
     
     # Menampilkan hasil evaluasi model
     results_df = pd.DataFrame(results, columns=["Model", "Accuracy"])
-    st.write("### Akurasi Model")
+    st.subheader("Model Accuracy")
     st.write(results_df)
     
     # Plot akurasi model
-    st.write("### Akurasi Score Barplot")
+    st.subheader("Accuracy Score Barplot")
     fig, ax = plt.subplots()
     sns.barplot(x='Model', y='Accuracy', data=results_df, ax=ax)
     plt.xlabel("Model")
