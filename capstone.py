@@ -15,6 +15,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from xgboost import XGBClassifier
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 # Function to load data
 def load_data():
@@ -63,6 +64,7 @@ def build_and_evaluate_models(X_train, y_train, X_test, y_test):
 # Main function for Streamlit app
 def main():
     st.title("Heart Disease Classification")
+    st.markdown("## A11.2021.13654 - Luluk Ardianto")
     st.markdown("### Project Capstone Heart Disease")
     st.markdown("Dataset: Hungarian Dataset")
     st.markdown("[Source: UCI Heart Disease Data](http://archive.ics.uci.edu/dataset/45/heart+disease)")
@@ -122,6 +124,43 @@ def main():
     ax.set_xlabel("Model")
     ax.set_ylabel("Accuracy")
     st.pyplot(fig)  # Display the plot
+
+    ## Optional: Detailed Model Analysis
+    st.subheader("Detailed Model Analysis")
+
+    # Detailed analysis for Naive Bayes
+    st.markdown("### Naive Bayes")
+    nb = GaussianNB()
+    nb.fit(X_train, y_train)
+    Y_pred_nb = nb.predict(X_test)
+    score_nb = accuracy_score(Y_pred_nb, y_test)
+    
+    st.markdown(f"**Accuracy Score**: {score_nb:.2f}")
+    
+    # Confusion matrix for Naive Bayes
+    cm_nb = confusion_matrix(y_test, Y_pred_nb)
+    disp_nb = ConfusionMatrixDisplay(confusion_matrix=cm_nb)
+    st.write("Confusion Matrix:")
+    disp_nb.plot(cmap=plt.cm.Blues, ax=plt.subplots(figsize=(7, 5))[1])
+    st.pyplot()
+
+    # Detailed analysis for Logistic Regression
+    st.markdown("### Logistic Regression")
+    lr = LogisticRegression()
+    lr.fit(X_train, y_train)
+    Y_pred_lr = lr.predict(X_test)
+    score_lr = accuracy_score(Y_pred_lr, y_test)
+    
+    st.markdown(f"**Accuracy Score**: {score_lr:.2f}")
+    
+    # Confusion matrix for Logistic Regression
+    cm_lr = confusion_matrix(y_test, Y_pred_lr)
+    disp_lr = ConfusionMatrixDisplay(confusion_matrix=cm_lr)
+    st.write("Confusion Matrix:")
+    disp_lr.plot(cmap=plt.cm.Blues, ax=plt.subplots(figsize=(7, 5))[1])
+    st.pyplot()
+
+    # More detailed analysis for other models can be added similarly
 
 if __name__ == '__main__':
     main()
