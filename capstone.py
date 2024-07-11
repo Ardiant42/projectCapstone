@@ -125,7 +125,7 @@ def main():
     ax.set_ylabel("Accuracy")
     st.pyplot(fig)  # Display the plot
 
-    ## Optional: Detailed Model Analysis
+    ## Detailed Model Analysis
     st.subheader("Detailed Model Analysis")
 
     # Detailed analysis for Naive Bayes
@@ -161,6 +161,22 @@ def main():
     st.pyplot()
 
     # More detailed analysis for other models can be added similarly
+
+    # Conclusion
+    st.subheader("Conclusion")
+    st.markdown("""
+    Based on the research using the Hungarian dataset for heart disease classification, several classification models have been evaluated and compared based on their accuracy. Here is a brief analysis for each model:
+    
+    1. **K-Nearest Neighbors (KNN)**: This model achieved the highest accuracy of 79.79%. KNN works by classifying data based on the majority of its nearest neighbors, which is suitable for cases where spatial patterns in the data have strong relevance.
+    
+    2. **Decision Tree**: With an accuracy of 76.6%, Decision Tree produced solid results. This model separates data based on a series of hierarchical decisions, allowing for easier and more intuitive interpretation of decision-making processes.
+    
+    3. **Logistic Regression** and **Support Vector Machine (SVM)**: Both models have relatively similar accuracies, 61.7% and 61.17% respectively. Logistic Regression is suitable for interpreting classification probabilities, while SVM focuses on finding the best hyperplane that separates classes in feature space.
+    
+    4. **Naive Bayes**: This model showed the lowest accuracy, 30.85%. Naive Bayes assumes independence between features, which can be simplistic but not always suitable for datasets with complex dependencies between features.
+    
+    In the context of heart disease classification, model selection should consider not only accuracy but also interpretability, training speed, and ability to handle specific characteristics of the dataset. A comprehensive model evaluation helps understand the strengths and weaknesses of each algorithm in this medical application. However, this research indicates that in the context of heart disease classification using the Hungarian dataset, the K-Nearest Neighbors (KNN) model can be considered a better choice based on the accuracy criteria obtained in this study.
+    """)
 
 if __name__ == '__main__':
     main()
